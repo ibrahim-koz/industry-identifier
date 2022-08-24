@@ -1,5 +1,6 @@
 import requests
 import json
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
 
 def get_available_domain_names():
@@ -15,18 +16,18 @@ def get_scrape_results(domain_names):
     return result
 
 
+def identify_industry(scrape_results):
+    tokenizer = AutoTokenizer.from_pretrained("sampathkethineedi/industry-classification")
+    model = AutoModelForSequenceClassification.from_pretrained("sampathkethineedi/industry-classification")
+    industry_tags = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
+    model_results = [{scrape_result["name"]: industry_tags(scrape_result["description"])} for scrape_result in scrape_results]
+    return model_results
+
 
 domain_names = get_available_domain_names()
-print(list(get_scrape_results(domain_names)))
 
-# print(requests.post("http://localhost:8080/api/scrape", json={"path": "https://slack.com/"}).text)
-#
-# tokenizer = AutoTokenizer.from_pretrained("sampathkethineedi/industry-classification")
-# model = AutoModelForSequenceClassification.from_pretrained("sampathkethineedi/industry-classification")
-#
-# industry_tags = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
-# industry_tags(
-#     "Stellar Capital Services Limited is an India-based non-banking financial company ... loan against property, management consultancy, personal loans and unsecured loans.")
-#
-# '''Ouput'''
-# [{'label': 'Consumer Finance', 'score': 0.9841355681419373}]
+scrape_results = get_scrape_results(domain_names)
+
+model_results = identify_industry(scrape_results)
+
+print(model_results)
