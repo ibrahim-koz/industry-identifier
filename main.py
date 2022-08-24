@@ -20,7 +20,9 @@ def identify_industry(scrape_results):
     tokenizer = AutoTokenizer.from_pretrained("sampathkethineedi/industry-classification")
     model = AutoModelForSequenceClassification.from_pretrained("sampathkethineedi/industry-classification")
     industry_tags = pipeline('sentiment-analysis', model=model, tokenizer=tokenizer)
-    model_results = [{scrape_result["name"]: industry_tags(scrape_result["description"])} for scrape_result in scrape_results]
+    model_results = [{scrape_result["name"]: industry_tags(
+        scrape_result["description"][:  min(len(scrape_result["description"]), 512)])} for scrape_result in
+                     scrape_results]
     return model_results
 
 
